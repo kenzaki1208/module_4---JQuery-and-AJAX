@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Blogs</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB"
+          crossorigin="anonymous">
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+</head>
+<body class="bg-light">
+
+<!-- Navbar: danh mục -->
+<ul class="nav bg-dark p-2">
+    <li class="nav-item">
+        <a class="nav-link text-white"
+           th:classappend="${selectedCategory} == null ? 'active' : ''"
+           th:href="@{/exercise/blogs(page=0)}">
+            Tất cả
+        </a>
+    </li>
+    <li class="nav-item" th:each="c : ${categories}">
+        <a class="nav-link text-white"
+           th:classappend="${selectedCategory?.id} == ${c.id} ? 'active' : ''"
+           th:href="@{/exercise/blogs/category/{id}(id=${c.id},page=0)}"
+           th:text="${c.name}">
+        </a>
+    </li>
+</ul>
+
+
+<div class="container py-4">
+    <h1 class="mb-4">Danh sách Blogs</h1>
+
+    <!-- Hiển thị danh mục đang lọc -->
+    <div th:if="${selectedCategory != null}">
+        <p><strong>Danh mục:</strong>
+            <span th:text="${selectedCategory.name}"></span>
+        </p>
+    </div>
+
+    <!-- Form tìm kiếm -->
+    <form class="d-flex mb-3" onsubmit="return false;">
+        <input id="search-input" class="form-control me-2" type="search"
+               placeholder="Tìm theo tiêu đề"
+               name="keyword" th:value="${keyword}">
+        <button id="btn-search" class="btn btn-outline-success" type="button">Tìm</button>
+    </form>
+
+    <!-- Nút tạo mới -->
+    <div class="mb-3">
+        <a class="btn btn-primary" th:href="@{/exercise/blogs/create}">
+            + Viết bài mới
+        </a>
+        <a class="btn btn-primary" th:href="@{/exercise/categories/create}">
+            + Tạo tiêu đề
+        </a>
+    </div>
+
+    <!-- Thông báo -->
+    <div th:if="${message}" class="alert alert-success" th:text="${message}"></div>
+    <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+
+    <!-- Bảng danh sách -->
+    <ul id="blog-list" class="list-group mb-3">
+        <!-- Sẽ được fill bằng JS -->
+    </ul>
+
+    <div class="d-grid mb-4">
+        <button id="btn-load-more" class="btn btn-outline-primary">Xem thêm</button>
+    </div>
+
+    <!-- Phân trang server (sẽ bị ẩn bởi JS nếu có) -->
+    <div id="server-pagination"></div>
+
+    <!-- Fallback khi tắt JS: bảng cũ -->
+    <noscript>
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover align-middle">
+                <thead class="table-dark">
+                <tr>
+                    <th>Tiêu đề</th>
+                    <th>Tác giả</th>
+                    <th>Ngày</th>
+                    <th class="text-center">Hành động</th>
+                </tr>
+                </thead>
+                <tbody>
+                <tr th:each="b : ${blogs}">
+                    <td th:text="${b.title}">Title</td>
+                    <td th:text="${b.author}">Author</td>
+                    <td th:text="${#temporals.format(b.createdAt, 'yyyy-MM-dd HH:mm')}">date</td>
+                    <td class="text-center">
+                        <a class="btn btn-sm btn-info text-white"
+                           th:href="@{/exercise/blogs/{id}(id=${b.id})}">Xem</a>
+                        <a class="btn btn-sm btn-warning"
+                           th:href="@{/exercise/blogs/{id}/edit(id=${b.id})}">Sửa</a>
+                        <form th:action="@{/exercise/blogs/{id}/delete(id=${b.id})}" method="post" class="d-inline">
+                            <button class="btn btn-sm btn-danger" type="submit"
+                                    onclick="return confirm('Xóa bài này?')">Xóa</button>
+                        </form>
+                    </td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </noscript>
+</div>
+<script src="https://code.jquery.com/jquery-3.7.1.min.js" crossorigin="anonymous"></script>
+<script>
+    (function () {
+        var state = {
+            keyword: "",
+            page: 0,
+            size: 5,
+            loading: false,
+            hasNext: true
+        };
+
+        var $list = $("#blog-list");
+        var $input = $("#search-input");
+        var $btnSearch = $("#btn-search");
+        var $btnMore = $("#btn-load-more");
+        var $pagination = $("#server-pagination");
+
+        if ($pagination.length) $pagination.hide();
+
+        function escapeHtml(s) {
+            if (!s) return "";
+            return String(s)
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+
+        function renderItem(it) {
+            var title = escapeHtml(it.title);
+            var author = escapeHtml(it.author || "");
+            var date = it.createdAt ? escapeHtml(it.createdAt) : "";
+            var cat = it.categoryName ? " · " + escapeHtml(it.categoryName) : "";
+            return '' +
+                '<li class="list-group-item d-flex flex-column gap-1" data-id="' + it.id + '">' +
+                    '<div class="d-flex justify-content-between align-items-start">' +
+                        '<a class="fw-semibold" href="/exercise/blogs/' + it.id + '">' + title + '</a>' +
+                    '</div>' +
+                    '<div class="text-muted small d-flex justify-content-between">' +
+                        'Tác giả: ' + author + (date ? " · " + date : "") + cat +
+                    '</div>' +
+                '</li>';
+        }
+
+        function setLoading(on) {
+            state.loading = on;
+            $btnMore.prop("disabled", on).text(on ? "Đang tải..." : "Xem thêm");
+            $btnSearch.prop("disabled", on);
+            $input.prop("disabled", on);
+        }
+
+        function loadPage() {
+            if (state.loading || (!state.hasNext && state.page > 0)) return;
+            setLoading(true);
+
+            $.getJSON("/exercise/blogs/search.json", {
+                keyword: state.keyword,
+                page: state.page,
+                size: state.size
+            }).done(function (data) {
+                var items = data && data.items ? data.items : [];
+                if (state.page === 0) {
+                    $list.empty();
+                }
+                if (items.length === 0 && state.page === 0) {
+                    $list.html('<li class="list-group-item text-muted">Không có kết quả.</li>');
+                } else {
+                    var html = $.map(items, renderItem).join("");
+                    $list.append(html);
+                }
+
+                state.hasNext = !!(data && data.hasNext);
+                if (state.hasNext) {
+                    $btnMore.show();
+                } else {
+                    $btnMore.hide();
+                }
+            }).fail(function () {
+                if (state.page === 0) {
+                    $list.html('<li class="list-group-item text-danger">Đã có lỗi xảy ra, vui lòng thử lại.</li>');
+                }
+            }).always(function () {
+                setLoading(false);
+            });
+        }
+
+        function startSearch() {
+            state.keyword = ($input.val() || "").trim();
+            state.page = 0;
+            state.hasNext = true;
+            loadPage();
+        }
+
+        var debounceTimer = null;
+        $input.on("input", function () {
+            clearTimeout(debounceTimer);
+            debounceTimer = setTimeout(startSearch, 300);
+        });
+
+        $input.on("keydown", function (e) {
+            if (e.key === "Enter") {
+                e.preventDefault();
+                startSearch();
+            }
+        });
+
+        $btnSearch.on("click", function () {
+            startSearch();
+        });
+
+        $btnMore.on("click", function () {
+            if (state.hasNext && !state.loading) {
+                state.page += 1;
+                loadPage();
+            }
+        });
+
+        // Tải trang đầu bằng AJAX với keyword rỗng
+        startSearch();
+    })();
+</script>
+
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI"
+        crossorigin="anonymous"></script>
+</body>
+</html>

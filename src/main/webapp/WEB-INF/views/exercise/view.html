@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Xem Blog</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+</head>
+<body class="bg-light">
+<div class="container py-4">
+    <h1 th:text="${blog.title}" class="mb-3">Title</h1>
+
+    <p><strong>Tác giả:</strong> <span th:text="${blog.author}">author</span></p>
+    <p><strong>Ngày:</strong> <span th:text="${#temporals.format(blog.createdAt, 'yyyy-MM-dd HH:mm')}"></span></p>
+
+    <div class="card p-3 mb-3">
+        <div th:utext="${blog.content}"></div>
+    </div>
+
+    <a class="btn btn-secondary" th:href="@{/exercise/blogs}">Quay về</a>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
+</body>
+</html>
