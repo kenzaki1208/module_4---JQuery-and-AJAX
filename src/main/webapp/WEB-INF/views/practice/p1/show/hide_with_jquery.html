@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Hiệu ứng show/hide với jQuery</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 30px;
+        }
+
+        p {
+            background-color: #f0f0f0;
+            padding: 15px;
+            border-radius: 8px;
+        }
+
+        button {
+            margin: 5px;
+            padding: 10px 20px;
+            font-size: 16px;
+            border: none;
+            border-radius: 5px;
+            background-color: #3498db;
+            color: white;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #2980b9;
+        }
+    </style>
+</head>
+<body>
+<p id="message">✨ Click vào nút "Hide" để ẩn dòng chữ này, hoặc "Show" để hiển thị lại.</p>
+<button id="hide">Hide</button>
+<button id="show">Show</button>
+
+<script>
+    $(document).ready(function () {
+        $("#hide").click(function () {
+            $("#message").slideUp(500);
+        });
+        $("#show").click(function () {
+            $("#message").slideDown(500);
+        });
+    })
+</script>
+</body>
+</html>
