@@ -62,9 +62,21 @@
     <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
 
     <!-- Bảng danh sách -->
-    <ul id="blog-list" class="list-group mb-3">
-        <!-- Sẽ được fill bằng JS -->
-    </ul>
+<!--    <ul id="blog-list" class="list-group mb-3">-->
+<!--        &lt;!&ndash; Sẽ được fill bằng JS &ndash;&gt;-->
+<!--    </ul>-->
+    <table class="table table-bordered">
+        <thead class="table-dark">
+        <tr>
+            <th>Tiêu đề</th>
+            <th>Tác giả</th>
+            <th>Ngày</th>
+            <th>Loại</th>
+            <th class="text-center">Hành động</th>
+        </tr>
+        </thead>
+        <tbody id="blog-list"></tbody>
+    </table>
 
     <div class="d-grid mb-4">
         <button id="btn-load-more" class="btn btn-outline-primary">Xem thêm</button>
@@ -140,15 +152,12 @@
             var author = escapeHtml(it.author || "");
             var date = it.createdAt ? escapeHtml(it.createdAt) : "";
             var cat = it.categoryName ? " · " + escapeHtml(it.categoryName) : "";
-            return '' +
-                '<li class="list-group-item d-flex flex-column gap-1" data-id="' + it.id + '">' +
-                    '<div class="d-flex justify-content-between align-items-start">' +
-                        '<a class="fw-semibold" href="/exercise/blogs/' + it.id + '">' + title + '</a>' +
-                    '</div>' +
-                    '<div class="text-muted small d-flex justify-content-between">' +
-                        'Tác giả: ' + author + (date ? " · " + date : "") + cat +
-                    '</div>' +
-                '</li>';
+            return `<tr>
+                        <td>${title}</td>
+                        <td>${author}</td>
+                        <td>${date}</td>
+                        <td>${cat}</td>
+                    </tr>`
         }
 
         function setLoading(on) {

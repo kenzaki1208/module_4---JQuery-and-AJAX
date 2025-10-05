@@ -9,7 +9,7 @@
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Roboto&display=swap">
 </head>
 <body>
-    <form id="add-smartphone">
+    <form id="add-smartphone" onsubmit="addNewSmartPhone()">
         <h1>Create New Smartphone</h1>
         <label for="producer">Producer: </label>
         <input type="text" id="producer" placeholder="e.g. Apple"/>
@@ -20,7 +20,7 @@
         <label for="price">Price: </label>
         <input type="text" id="price" placeholder="e.g. 999"/>
 
-        <input type="submit" value="Add" onclick="addNewSmartPhone()">
+        <input type="submit" value="Add">
     </form>
 
     <h1 id="title">📱 List of Smartphones</h1>
