@@ -152,11 +152,24 @@
             var author = escapeHtml(it.author || "");
             var date = it.createdAt ? escapeHtml(it.createdAt) : "";
             var cat = it.categoryName ? " · " + escapeHtml(it.categoryName) : "";
+
+            var viewUrl = "/exercise/blogs/" + it.id;
+            var editUrl = "/exercise/blogs/" + it.id + "/edit";
+            var deleteUrl = "/exercise/blogs/" + it.id + "/delete";
+
             return `<tr>
                         <td>${title}</td>
                         <td>${author}</td>
                         <td>${date}</td>
                         <td>${cat}</td>
+                        <td class="text-center">
+                            <a class="btn btn-sm btn-info text-white" href="${viewUrl}">Xem</a>
+                            <a class="btn btn-sm btn-warning" href="${editUrl}">Sửa</a>
+                            <form action="${deleteUrl}" method="post" class="d-inline">
+                                <button class="btn btn-sm btn-danger" type="submit"
+                                        onclick="return confirm('Xóa bài này?')">Xóa</button>
+                            </form>
+                        </td>
                     </tr>`
         }
 

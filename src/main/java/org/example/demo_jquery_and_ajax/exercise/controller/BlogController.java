@@ -130,7 +130,7 @@ public class BlogController {
         return "exercise/list";
     }
 
-    // DTO gọn cho phần list item (có thể tách file riêng nếu muốn)
+    // DTO gọn cho phần list item
     static final class BlogItemDto {
         public Long id;
         public String title;
